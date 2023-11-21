@@ -12,11 +12,7 @@ from django.utils.translation import gettext_lazy as _
 from problem_randomizer_be.users.forms import UserAdminChangeForm
 from problem_randomizer_be.users.models import User
 from problem_randomizer_be.users.tests.factories import UserFactory
-from problem_randomizer_be.users.views import (
-    UserRedirectView,
-    UserUpdateView,
-    user_detail_view,
-)
+from problem_randomizer_be.users.views import UserRedirectView, UserUpdateView, user_detail_view
 
 pytestmark = pytest.mark.django_db
 
