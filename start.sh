@@ -8,4 +8,4 @@ set -o nounset
 python manage.py collectstatic --noinput
 python manage.py migrate
 
-exec gunicorn config.wsgi
+exec gunicorn config.asgi -k uvicorn.workers.UvicornWorker
