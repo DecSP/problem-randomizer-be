@@ -14,7 +14,20 @@ async def get_codeforces_problems():
     problem_data, contest_data = await asyncio.gather(*fetches)
     await client.aclose()
 
-    return {"problems": problem_data.json()["result"]["problems"], "contests": contest_data.json()["result"]}
+    problems = problem_data.json()["result"]["problems"]
+    contests = contest_data.json()["result"]
+    contest_dict = {contest["id"]: contest for contest in contests}
+
+    return [
+        {
+            "name": problem["name"],
+            "contestName": contest_dict[problem["contestId"]]["name"],
+            "url": f"https://codeforces.com/problemset/problem/{problem['contestId']}/{problem['index']}",
+            "rating": problem["rating"],
+        }
+        for problem in problems
+        if "rating" in problem
+    ]
 
 
 class CodeforcesProblems(APIView):
