@@ -1,0 +1,2 @@
+CODEFORCES = "cf"
+ATCODER = "ac"

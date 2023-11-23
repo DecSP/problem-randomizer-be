@@ -90,7 +90,7 @@ THIRD_PARTY_APPS = [
 
 LOCAL_APPS = [
     "problem_randomizer_be.users",
-    "problem_randomizer_be.problem_sources",
+    "problem_randomizer_be.problems",
     # Your stuff: custom apps go here
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
