@@ -13,6 +13,7 @@ class UpdateProblemsViewSet(APIView):
     UPDATE_FUNCTION_MAP = {
         constants.CODEFORCES: helpers.update_codeforces_problems,
         constants.ATCODER: helpers.update_atcoder_problems,
+        constants.CSES: helpers.update_cses_problems,
     }
 
     def get(self, request, source_type):
@@ -41,4 +42,10 @@ class ProblemViewSet(ReadOnlyModelViewSet):
     def atcoder(self, request):
         ac = self.queryset.filter(source_type=constants.ATCODER)
         serializer = ProblemSerializer(ac, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False)
+    def cses(self, request):
+        cses = self.queryset.filter(source_type=constants.CSES)
+        serializer = ProblemSerializer(cses, many=True)
         return Response(serializer.data)

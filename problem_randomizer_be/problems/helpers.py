@@ -1,7 +1,10 @@
 import asyncio
+from urllib.parse import urljoin
 
 import httpx
+import requests
 from asgiref.sync import async_to_sync
+from bs4 import BeautifulSoup as bs
 
 from problem_randomizer_be.problems import constants
 from problem_randomizer_be.problems.models import Problem
@@ -70,4 +73,35 @@ def update_atcoder_problems():
     problems = async_to_sync(get_atcoder_problems)()
     if problems:
         Problem.objects.filter(source_type=constants.ATCODER).delete()
-        print(Problem.objects.bulk_create(problems))
+        Problem.objects.bulk_create(problems)
+
+
+def get_cses_problems():
+    url = "https://cses.fi/problemset"
+    html = requests.get(url).text
+    soup = bs(html, "html.parser")
+    problems = []
+    for h2_tag in soup.find_all("h2")[1:]:
+        next_sibling = h2_tag.find_next_sibling()
+        if next_sibling and next_sibling.name == "ul":
+            for link in next_sibling.find_all("a"):
+                path = link.get("href")
+                if path and path.startswith("/problemset/task"):
+                    problem_url = urljoin(url, path)
+                    problems.append(
+                        Problem(
+                            name=link.text,
+                            contest_name=h2_tag.text,
+                            url=problem_url,
+                            rating=1000,
+                            source_type=constants.CSES,
+                        )
+                    )
+    return problems
+
+
+def update_cses_problems():
+    problems = get_cses_problems()
+    if problems:
+        Problem.objects.filter(source_type=constants.CSES).delete()
+        Problem.objects.bulk_create(problems)

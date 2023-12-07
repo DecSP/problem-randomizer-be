@@ -2,7 +2,7 @@ from django.db import models
 
 from problem_randomizer_be.problems import constants
 
-SOURCE_TYPE_CHOICES = ((constants.CODEFORCES, "Codeforces"), (constants.ATCODER, "AtCoder"))
+SOURCE_TYPE_CHOICES = ((constants.CODEFORCES, "Codeforces"), (constants.ATCODER, "AtCoder"), (constants.CSES, "CSES"))
 
 
 class Problem(models.Model):
