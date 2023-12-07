@@ -25,3 +25,4 @@ drf-spectacular==0.26.5  # https://github.com/tfranzel/drf-spectacular
 
 
 httpx==0.25.1
+bs4
