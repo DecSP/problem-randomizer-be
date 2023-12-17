@@ -2,6 +2,6 @@
 # ------------------------------------------------------------------------------
 POSTGRES_HOST=postgres
 POSTGRES_PORT=5432
-POSTGRES_DB=my_awesome_project
+POSTGRES_DB=problem_randomizer_be
 POSTGRES_USER=HUuAzBijbNdQVKILNIDUlyYVzYIIVEZm
-POSTGRES_PASSWORD=Tl6sHTmv786oei281FKIOjQYAodCMsczsLwxy5UqgYsc9tHdfuf2Bbf7xhd4zNKY
+POSTGRES_PASSWORD=wweR33P9CpuarQIumv0MIBkBD2D8ov72VCLKf471g3qVbXyvyyyb5ojGV6wGSiUX
