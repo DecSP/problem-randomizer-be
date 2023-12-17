@@ -12,5 +12,5 @@ class Problem(models.Model):
     contest_name = models.CharField(max_length=256, blank=True)
     url = models.CharField(max_length=256)
     rating = models.IntegerField()
-    content = models.TextField()
-    sample_test_data = models.JSONField()
+    content = models.TextField(blank=True)
+    sample_test_data = models.JSONField(default=dict)
