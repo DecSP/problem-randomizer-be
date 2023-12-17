@@ -55,6 +55,18 @@ async def get_atcoder_problems():
     prob_with_models = filter(
         lambda prob: prob["id"] in problem_model_data and "difficulty" in problem_model_data[prob["id"]], problem_data
     )
+
+    def get_content(url):
+        html = requests.get(url).text
+        soup = bs(html, "html.parser")
+        span_with_lang_en = soup.find("span", {"class": "lang-en"})
+        if not span_with_lang_en:
+            return ""
+        first_p_tag = span_with_lang_en.find("p")
+        if first_p_tag and first_p_tag.text.startswith("Score"):
+            first_p_tag.extract()
+        return str(span_with_lang_en)
+
     problems = [
         Problem(
             name=problem["name"],
@@ -62,9 +74,11 @@ async def get_atcoder_problems():
             url=f"https://atcoder.jp/contests/{problem['contest_id']}/tasks/{problem['id']}",
             rating=problem_model_data[problem["id"]]["difficulty"],
             source_type=Problem.SourceType.ATCODER,
+            content=get_content(f"https://atcoder.jp/contests/{problem['contest_id']}/tasks/{problem['id']}"),
         )
         for problem in prob_with_models
     ]
+
     return problems
 
 
