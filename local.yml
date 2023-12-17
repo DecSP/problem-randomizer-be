@@ -8,7 +8,7 @@ services:
   django:
     build:
       context: .
-      dockerfile: ./compose/local/django/Dockerfile
+      dockerfile: ./compose/django/Dockerfile
     image: problem_randomizer_be_local_django
     container_name: problem_randomizer_be_local_django
     depends_on:
@@ -16,8 +16,8 @@ services:
     volumes:
       - .:/app:z
     env_file:
-      - ./.envs/.local/.django
-      - ./.envs/.local/.postgres
+      - ./.envs/.django
+      - ./.envs/.postgres
     ports:
       - "8000:8000"
     command: /start
@@ -25,11 +25,11 @@ services:
   postgres:
     build:
       context: .
-      dockerfile: ./compose/production/postgres/Dockerfile
+      dockerfile: ./compose/postgres/Dockerfile
     image: problem_randomizer_be_production_postgres
     container_name: problem_randomizer_be_local_postgres
     volumes:
       - problem_randomizer_be_local_postgres_data:/var/lib/postgresql/data
       - problem_randomizer_be_local_postgres_data_backups:/backups
     env_file:
-      - ./.envs/.local/.postgres
+      - ./.envs/.postgres
