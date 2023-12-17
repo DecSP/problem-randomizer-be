@@ -6,7 +6,6 @@ import requests
 from asgiref.sync import async_to_sync
 from bs4 import BeautifulSoup as bs
 
-from problem_randomizer_be.problems import constants
 from problem_randomizer_be.problems.models import Problem
 
 
@@ -27,7 +26,7 @@ async def get_codeforces_problems():
             contest_name=contest_dict[problem["contestId"]]["name"],
             url=f"https://codeforces.com/problemset/problem/{problem['contestId']}/{problem['index']}",
             rating=problem["rating"],
-            source_type=constants.CODEFORCES,
+            source_type=Problem.SourceType.CODEFORCES,
         )
         for problem in problems
         if "rating" in problem
@@ -38,7 +37,7 @@ async def get_codeforces_problems():
 def update_codeforces_problems():
     problems = async_to_sync(get_codeforces_problems)()
     if problems:
-        Problem.objects.filter(source_type=constants.CODEFORCES).delete()
+        Problem.objects.filter(source_type=Problem.SourceType.CODEFORCES).delete()
         Problem.objects.bulk_create(problems)
 
 
@@ -62,7 +61,7 @@ async def get_atcoder_problems():
             contest_name=contest_dict[problem["contest_id"]]["title"],
             url=f"https://atcoder.jp/contests/{problem['contest_id']}/tasks/{problem['id']}",
             rating=problem_model_data[problem["id"]]["difficulty"],
-            source_type=constants.ATCODER,
+            source_type=Problem.SourceType.ATCODER,
         )
         for problem in prob_with_models
     ]
@@ -72,7 +71,7 @@ async def get_atcoder_problems():
 def update_atcoder_problems():
     problems = async_to_sync(get_atcoder_problems)()
     if problems:
-        Problem.objects.filter(source_type=constants.ATCODER).delete()
+        Problem.objects.filter(source_type=Problem.SourceType.ATCODER).delete()
         Problem.objects.bulk_create(problems)
 
 
@@ -94,7 +93,7 @@ def get_cses_problems():
                             contest_name=h2_tag.text,
                             url=problem_url,
                             rating=1000,
-                            source_type=constants.CSES,
+                            source_type=Problem.SourceType.CSES,
                         )
                     )
     return problems
@@ -103,5 +102,5 @@ def get_cses_problems():
 def update_cses_problems():
     problems = get_cses_problems()
     if problems:
-        Problem.objects.filter(source_type=constants.CSES).delete()
+        Problem.objects.filter(source_type=Problem.SourceType.CSES).delete()
         Problem.objects.bulk_create(problems)

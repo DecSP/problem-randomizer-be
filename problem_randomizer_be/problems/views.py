@@ -4,16 +4,16 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ReadOnlyModelViewSet
 
-from problem_randomizer_be.problems import constants, helpers
+from problem_randomizer_be.problems import helpers
 from problem_randomizer_be.problems.models import Problem
-from problem_randomizer_be.problems.serializers import ProblemSerializer
+from problem_randomizer_be.problems.serializers import ProblemDetailSerializer, ProblemSerializer
 
 
 class UpdateProblemsViewSet(APIView):
     UPDATE_FUNCTION_MAP = {
-        constants.CODEFORCES: helpers.update_codeforces_problems,
-        constants.ATCODER: helpers.update_atcoder_problems,
-        constants.CSES: helpers.update_cses_problems,
+        Problem.SourceType.CODEFORCES: helpers.update_codeforces_problems,
+        Problem.SourceType.ATCODER: helpers.update_atcoder_problems,
+        Problem.SourceType.CSES: helpers.update_cses_problems,
     }
 
     def get(self, request, source_type):
@@ -32,20 +32,13 @@ class ProblemViewSet(ReadOnlyModelViewSet):
     queryset = Problem.objects.all()
     serializer_class = ProblemSerializer
 
-    @action(detail=False)
-    def codeforces(self, request):
-        cf = self.queryset.filter(source_type=constants.CODEFORCES)
-        serializer = ProblemSerializer(cf, many=True)
+    @action(detail=False, url_path=r"by-source/(?P<source_type>\w+)")
+    def by_source(self, request, source_type):
+        problems = self.queryset.filter(source_type=source_type)
+        serializer = ProblemSerializer(problems, many=True)
         return Response(serializer.data)
 
-    @action(detail=False)
-    def atcoder(self, request):
-        ac = self.queryset.filter(source_type=constants.ATCODER)
-        serializer = ProblemSerializer(ac, many=True)
-        return Response(serializer.data)
-
-    @action(detail=False)
-    def cses(self, request):
-        cses = self.queryset.filter(source_type=constants.CSES)
-        serializer = ProblemSerializer(cses, many=True)
+    def retrieve(self, request, *args, **kwargs):
+        problem = self.get_object()
+        serializer = ProblemDetailSerializer(problem)
         return Response(serializer.data)
