@@ -38,6 +38,5 @@ def get_cses_problems():
 def update_cses_problems():
     problems = get_cses_problems()
     if problems:
-        Problem.objects.filter(source_type=Problem.SourceType.CSES).delete()
         Problem.objects.bulk_create(problems)
     return len(problems)

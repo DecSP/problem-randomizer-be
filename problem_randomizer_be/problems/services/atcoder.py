@@ -54,6 +54,5 @@ def update_atcoder_problems():
     included_urls = set(Problem.objects.filter(source_type=Problem.SourceType.ATCODER).values_list("url", flat=True))
     problems = async_to_sync(get_atcoder_problems)(included_urls)
     if problems:
-        Problem.objects.filter(source_type=Problem.SourceType.ATCODER).delete()
         Problem.objects.bulk_create(problems)
     return len(problems)

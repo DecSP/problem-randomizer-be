@@ -41,6 +41,5 @@ def update_codeforces_problems():
 
     problems = async_to_sync(get_codeforces_problems)(included_urls)
     if problems:
-        Problem.objects.filter(source_type=Problem.SourceType.CODEFORCES).delete()
         Problem.objects.bulk_create(problems)
     return len(problems)
