@@ -4,25 +4,28 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ReadOnlyModelViewSet
 
-from problem_randomizer_be.problems import helpers
 from problem_randomizer_be.problems.models import Problem
 from problem_randomizer_be.problems.serializers import ProblemDetailSerializer, ProblemSerializer
+from problem_randomizer_be.problems.services.atcoder import update_atcoder_problems
+from problem_randomizer_be.problems.services.codeforces import update_codeforces_problems
+from problem_randomizer_be.problems.services.cses import update_cses_problems
 
 
 class UpdateProblemsViewSet(APIView):
     UPDATE_FUNCTION_MAP = {
-        Problem.SourceType.CODEFORCES: helpers.update_codeforces_problems,
-        Problem.SourceType.ATCODER: helpers.update_atcoder_problems,
-        Problem.SourceType.CSES: helpers.update_cses_problems,
+        Problem.SourceType.CODEFORCES: update_codeforces_problems,
+        Problem.SourceType.ATCODER: update_atcoder_problems,
+        Problem.SourceType.CSES: update_cses_problems,
     }
 
     def get(self, request, source_type):
         if source_type in self.UPDATE_FUNCTION_MAP:
             update_func = self.UPDATE_FUNCTION_MAP[source_type]
             try:
-                update_func()
-                return Response(status=status.HTTP_200_OK)
+                num_updated = update_func()
+                return Response({"detail": f"update {num_updated} new problems"}, status=status.HTTP_200_OK)
             except Exception as e:
+                print(e)
                 return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response({"error": "specify problem source"}, status=status.HTTP_400_BAD_REQUEST)
