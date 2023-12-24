@@ -19,4 +19,5 @@ urlpatterns = router.urls
 
 urlpatterns += [
     path("problems/", include("problem_randomizer_be.problems.urls")),
+    path("users/", include("problem_randomizer_be.users.api.urls")),
 ]
