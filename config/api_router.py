@@ -11,7 +11,7 @@ else:
     router = SimpleRouter()
 
 router.register("users", UserViewSet)
-router.register("problems", ProblemViewSet)
+router.register("problems", ProblemViewSet, basename="problems")
 
 app_name = "api"
 urlpatterns = router.urls
