@@ -12,4 +12,4 @@ class ProblemSerializer(serializers.ModelSerializer[Problem]):
 class ProblemDetailSerializer(serializers.ModelSerializer[Problem]):
     class Meta:
         model = Problem
-        fields = ["source_type", "name", "contest_name", "url", "rating", "content", "sample_test_data"]
+        fields = ["source_type", "name", "contest_name", "url", "rating", "content"]
