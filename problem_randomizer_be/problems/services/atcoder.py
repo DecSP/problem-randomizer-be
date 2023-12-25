@@ -1,9 +1,12 @@
 import asyncio
+import time
+from urllib.parse import unquote
 
 import httpx
 import requests
 from asgiref.sync import async_to_sync
 from bs4 import BeautifulSoup as bs
+from django.conf import settings
 
 from problem_randomizer_be.problems.models import Problem
 
@@ -59,3 +62,71 @@ class AtcoderService:
         if problems:
             Problem.objects.bulk_create(problems)
         return len(problems)
+
+    def __get_csrf_token(self, resp):
+        ss_cookies = unquote(resp.cookies.get("REVEL_SESSION"))
+        csrf_token_index = ss_cookies.index("csrf_token:") + len("csrf_token:")
+        csrf_token = ss_cookies[csrf_token_index:].split("\x00")[0]
+        return csrf_token
+
+    def login(self, session):
+        resp = session.get("https://atcoder.jp/login?continue=https://atcoder.jp/")
+        print(settings.ATCODER_USERNAME)
+        print(settings.ATCODER_PASSWORD)
+        login_data = {
+            "username": settings.ATCODER_USERNAME,
+            "password": settings.ATCODER_PASSWORD,
+            "csrf_token": self.__get_csrf_token(resp),
+        }
+        resp = session.post("https://atcoder.jp/login?continue=https://atcoder.jp/", login_data)
+
+        assert resp.status_code == 200
+        return self.__get_csrf_token(resp)
+
+    def submit_problem(self, url, code):
+        task_name = url.split("/")[-1]
+        contest_id = task_name.split("_")[0]
+
+        with requests.Session() as session:
+            csrf_token = self.login(session)
+            post_data = {
+                "data.LanguageId": "5078",  # only support python for now
+                "data.TaskScreenName": task_name,
+                "sourceCode": code,
+                "csrf_token": csrf_token,
+            }
+            resp = session.post(f"https://atcoder.jp/contests/{contest_id}/submit", post_data)
+            submission_link = self.__get_submission_link(resp)
+            assert submission_link
+            sub_id = submission_link.split("/")[-1]
+
+            yield "Judging"
+            score = 0
+            while True:
+                time.sleep(1)
+                resp = self.__get_submission_status(session, sub_id, contest_id)
+                x = resp.json()
+                if "Interval" not in x:
+                    score = int(x["Result"][sub_id]["Score"])
+                    break
+            yield "Accepted" if score > 0 else "Failed"
+
+    def __get_submission_link(self, resp):
+        soup = bs(resp.content, "html.parser")
+
+        # Find the first link within the table
+        tbody_element = soup.find("tbody")
+
+        if tbody_element:
+            tr_element = tbody_element.find("tr")
+            if tr_element:
+                # Find the first link within the tr
+                link_element = tr_element.find("a", string="Detail", href=True)
+                if link_element:
+                    link = link_element["href"]
+                    return link
+        return None
+
+    def __get_submission_status(self, session, submission_id, contest_id):
+        url = f"https://atcoder.jp/contests/{contest_id}/submissions/me/status/json?reload=true&sids[]={submission_id}"
+        return session.get(url)

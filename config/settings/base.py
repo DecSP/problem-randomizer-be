@@ -86,11 +86,13 @@ THIRD_PARTY_APPS = [
     "rest_framework.authtoken",
     "corsheaders",
     "drf_spectacular",
+    "channels",
 ]
 
 LOCAL_APPS = [
     "problem_randomizer_be.users",
     "problem_randomizer_be.problems",
+    "problem_randomizer_be.websocket",
     # Your stuff: custom apps go here
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
@@ -344,3 +346,6 @@ SPECTACULAR_SETTINGS = {
 }
 # Your stuff...
 # ------------------------------------------------------------------------------
+
+ATCODER_USERNAME = env.str("ATCODER_USERNAME")
+ATCODER_PASSWORD = env.str("ATCODER_PASSWORD")
