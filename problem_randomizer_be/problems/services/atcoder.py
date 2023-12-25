@@ -71,8 +71,6 @@ class AtcoderService:
 
     def login(self, session):
         resp = session.get("https://atcoder.jp/login?continue=https://atcoder.jp/")
-        print(settings.ATCODER_USERNAME)
-        print(settings.ATCODER_PASSWORD)
         login_data = {
             "username": settings.ATCODER_USERNAME,
             "password": settings.ATCODER_PASSWORD,
@@ -83,7 +81,7 @@ class AtcoderService:
         assert resp.status_code == 200
         return self.__get_csrf_token(resp)
 
-    def submit_problem(self, url, code):
+    async def submit_problem(self, url, code):
         task_name = url.split("/")[-1]
         contest_id = task_name.split("_")[0]
 

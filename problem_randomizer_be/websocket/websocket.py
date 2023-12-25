@@ -26,8 +26,7 @@ class WSConsumer(AsyncWebsocketConsumer):
         if message["source_type"] == "atcoder":
             code = message.get("code", "")
             try:
-                for message in self.atcoder_service.submit_problem(problem_url, code):
-                    print(message)
+                async for message in self.atcoder_service.submit_problem(problem_url, code):
                     await self.send(text_data=json.dumps({"message": message}))
             except Exception as e:
                 await self.send(text_data=json.dumps({"message": f"An error occurred {e}"}))
