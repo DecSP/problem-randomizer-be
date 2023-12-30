@@ -8,6 +8,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import GenericViewSet
 
+from problem_randomizer_be.utils.response import CustomResponse
+
 from .serializers import UserSerializer
 
 User = get_user_model()
@@ -40,9 +42,12 @@ class LoginView(APIView):
 
         if user:
             token, created = Token.objects.get_or_create(user=user)
-            return Response({"token": token.key, "user_id": user.id}, status=status.HTTP_200_OK)
-
-        return Response({"error": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
+            return CustomResponse(
+                status.HTTP_200_OK,
+                "Login successfully",
+                {"token": token.key, "user": {"username": user.username, "name": user.name}},
+            )
+        return CustomResponse(status.HTTP_401_UNAUTHORIZED, "Invalid credentials", False)
 
 
 class SignUpView(generics.CreateAPIView):
@@ -50,8 +55,10 @@ class SignUpView(generics.CreateAPIView):
     serializer_class = UserSerializer
 
     def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        try:
+            serializer = self.get_serializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            self.perform_create(serializer)
+            return CustomResponse(status.HTTP_201_CREATED, "Created user successfully", True)
+        except Exception as e:
+            return CustomResponse(status.HTTP_401_UNAUTHORIZED, f"Error: {e}", True)
