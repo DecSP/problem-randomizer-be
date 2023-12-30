@@ -1,9 +1,7 @@
 import asyncio
-import time
 from urllib.parse import unquote
 
 import httpx
-import requests
 from asgiref.sync import async_to_sync
 from bs4 import BeautifulSoup as bs
 from django.conf import settings
@@ -44,7 +42,7 @@ class AtcoderService:
         return problems
 
     def get_atcoder_content(self, url):
-        html = requests.get(url).text
+        html = httpx.get(url).text
         soup = bs(html, "html.parser")
         span_with_lang_en = soup.find("span", {"class": "lang-en"})
         if not span_with_lang_en:
@@ -69,31 +67,30 @@ class AtcoderService:
         csrf_token = ss_cookies[csrf_token_index:].split("\x00")[0]
         return csrf_token
 
-    def login(self, session):
-        resp = session.get("https://atcoder.jp/login?continue=https://atcoder.jp/")
+    async def login(self, session):
+        resp = await session.get("https://atcoder.jp/login?continue=https://atcoder.jp/")
         login_data = {
             "username": settings.ATCODER_USERNAME,
             "password": settings.ATCODER_PASSWORD,
             "csrf_token": self.__get_csrf_token(resp),
         }
-        resp = session.post("https://atcoder.jp/login?continue=https://atcoder.jp/", login_data)
-
-        assert resp.status_code == 200
+        resp = await session.post("https://atcoder.jp/login?continue=https://atcoder.jp/", data=login_data)
+        assert resp.status_code != 403
         return self.__get_csrf_token(resp)
 
     async def submit_problem(self, url, code):
         task_name = url.split("/")[-1]
         contest_id = task_name.split("_")[0]
-
-        with requests.Session() as session:
-            csrf_token = self.login(session)
+        async with httpx.AsyncClient() as session:
+            csrf_token = await self.login(session)
             post_data = {
                 "data.LanguageId": "5078",  # only support python for now
                 "data.TaskScreenName": task_name,
                 "sourceCode": code,
                 "csrf_token": csrf_token,
             }
-            resp = session.post(f"https://atcoder.jp/contests/{contest_id}/submit", post_data)
+            await session.post(f"https://atcoder.jp/contests/{contest_id}/submit", data=post_data)
+            resp = await session.get(f"https://atcoder.jp/contests/{contest_id}/submissions/me")
             submission_link = self.__get_submission_link(resp)
             assert submission_link
             sub_id = submission_link.split("/")[-1]
@@ -101,8 +98,8 @@ class AtcoderService:
             yield "Judging"
             score = 0
             while True:
-                time.sleep(1)
-                resp = self.__get_submission_status(session, sub_id, contest_id)
+                await asyncio.sleep(1)
+                resp = await self.__get_submission_status(session, sub_id, contest_id)
                 x = resp.json()
                 if "Interval" not in x:
                     score = int(x["Result"][sub_id]["Score"])
@@ -125,6 +122,6 @@ class AtcoderService:
                     return link
         return None
 
-    def __get_submission_status(self, session, submission_id, contest_id):
+    async def __get_submission_status(self, session, submission_id, contest_id):
         url = f"https://atcoder.jp/contests/{contest_id}/submissions/me/status/json?reload=true&sids[]={submission_id}"
-        return session.get(url)
+        return await session.get(url)
