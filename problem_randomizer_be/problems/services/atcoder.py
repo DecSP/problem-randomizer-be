@@ -8,6 +8,8 @@ from django.conf import settings
 
 from problem_randomizer_be.problems.models import Problem
 
+from .atcoder_bs import html_to_dict
+
 
 class AtcoderService:
     async def get_atcoder_problems(self, included_urls):
@@ -43,14 +45,7 @@ class AtcoderService:
 
     def get_atcoder_content(self, url):
         html = httpx.get(url).text
-        soup = bs(html, "html.parser")
-        span_with_lang_en = soup.find("span", {"class": "lang-en"})
-        if not span_with_lang_en:
-            return ""
-        first_p_tag = span_with_lang_en.find("p")
-        if first_p_tag and first_p_tag.text.startswith("Score"):
-            first_p_tag.extract()
-        return str(span_with_lang_en)
+        return html_to_dict(html)
 
     def update_atcoder_problems(self):
         included_urls = set(
