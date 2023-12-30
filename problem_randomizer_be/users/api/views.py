@@ -4,7 +4,6 @@ from rest_framework.authtoken.models import Token
 from rest_framework.decorators import action
 from rest_framework.mixins import ListModelMixin, RetrieveModelMixin, UpdateModelMixin
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import GenericViewSet
 
@@ -28,7 +27,7 @@ class UserViewSet(RetrieveModelMixin, ListModelMixin, UpdateModelMixin, GenericV
     @action(detail=False)
     def me(self, request):
         serializer = UserSerializer(request.user, context={"request": request})
-        return Response(status=status.HTTP_200_OK, data=serializer.data)
+        return CustomResponse(status=status.HTTP_200_OK, message="", data=serializer.data)
 
 
 class LoginView(APIView):
@@ -42,10 +41,11 @@ class LoginView(APIView):
 
         if user:
             token, created = Token.objects.get_or_create(user=user)
+            serializer = UserSerializer(user)
             return CustomResponse(
                 status.HTTP_200_OK,
                 "Login successfully",
-                {"token": token.key, "user": {"username": user.username, "name": user.name}},
+                {"token": token.key, "user": serializer.data},
             )
         return CustomResponse(status.HTTP_401_UNAUTHORIZED, "Invalid credentials", False)
 
