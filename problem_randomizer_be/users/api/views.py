@@ -27,7 +27,7 @@ class UserViewSet(RetrieveModelMixin, ListModelMixin, UpdateModelMixin, GenericV
     @action(detail=False)
     def me(self, request):
         serializer = UserSerializer(request.user, context={"request": request})
-        return CustomResponse(status=status.HTTP_200_OK, message="", data=serializer.data)
+        return CustomResponse(status_code=status.HTTP_200_OK, message="", data=serializer.data)
 
 
 class LoginView(APIView):
