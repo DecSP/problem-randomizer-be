@@ -1,12 +1,15 @@
 import asyncio
 
 import httpx
-from asgiref.sync import async_to_sync
 
 from problem_randomizer_be.problems.models import Problem
 
+from .html import CodeforcesProblemContentHTMLProcessor
 
-class CodeforcesService:
+
+class CodeforcesClient:
+    content_html_processor = CodeforcesProblemContentHTMLProcessor()
+
     async def get_codeforces_problems(self, included_urls):
         urls = ["https://codeforces.com/api/problemset.problems", "https://codeforces.com/api/contest.list"]
         client = httpx.AsyncClient()
@@ -34,12 +37,6 @@ class CodeforcesService:
 
         return problems
 
-    def update_codeforces_problems(self):
-        included_urls = set(
-            Problem.objects.filter(source_type=Problem.SourceType.CODEFORCES).values_list("url", flat=True)
-        )
-
-        problems = async_to_sync(self.get_codeforces_problems)(included_urls)
-        if problems:
-            Problem.objects.bulk_create(problems)
-        return len(problems)
+    def get_problem_content(self, url):
+        html = httpx.get(url).text
+        return self.content_html_processor.html_to_data(html)

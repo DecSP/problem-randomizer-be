@@ -4,12 +4,10 @@ from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
 
 from problem_randomizer_be.problems.models import Problem
-from problem_randomizer_be.problems.services.atcoder import AtcoderService
+from problem_randomizer_be.problems.services import services
 
 
 class WSConsumer(AsyncWebsocketConsumer):
-    atcoder_service = AtcoderService()
-
     async def connect(self):
         await self.accept()
 
@@ -26,7 +24,7 @@ class WSConsumer(AsyncWebsocketConsumer):
         if message["source_type"] == "atcoder":
             code = message.get("code", "")
             try:
-                async for message in self.atcoder_service.submit_problem(problem_url, code):
+                async for message in services[message["source_type"]].submit_problem(problem_url, code):
                     await self.send(text_data=json.dumps({"message": message}))
             except Exception as e:
                 await self.send(text_data=json.dumps({"message": f"An error occurred {e}"}))

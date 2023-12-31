@@ -2,16 +2,17 @@ import asyncio
 from urllib.parse import unquote
 
 import httpx
-from asgiref.sync import async_to_sync
-from bs4 import BeautifulSoup as bs
 from django.conf import settings
 
 from problem_randomizer_be.problems.models import Problem
 
-from .atcoder_bs import html_to_dict
+from .html import AtcoderProblemContentHTMLProcessor, AtcoderProblemSubmissionHTMLProcessor
 
 
-class AtcoderService:
+class AtcoderClient:
+    content_html_processor = AtcoderProblemContentHTMLProcessor()
+    submission_html_processor = AtcoderProblemSubmissionHTMLProcessor()
+
     async def get_atcoder_problems(self, included_urls):
         urls = [
             "https://kenkoooo.com/atcoder/resources/problems.json",
@@ -45,16 +46,7 @@ class AtcoderService:
 
     def get_atcoder_content(self, url):
         html = httpx.get(url).text
-        return html_to_dict(html)
-
-    def update_atcoder_problems(self):
-        included_urls = set(
-            Problem.objects.filter(source_type=Problem.SourceType.ATCODER).values_list("url", flat=True)
-        )
-        problems = async_to_sync(self.get_atcoder_problems)(included_urls)
-        if problems:
-            Problem.objects.bulk_create(problems)
-        return len(problems)
+        return self.content_html_processor.html_to_data(html)
 
     def __get_csrf_token(self, resp):
         ss_cookies = unquote(resp.cookies.get("REVEL_SESSION"))
@@ -86,7 +78,7 @@ class AtcoderService:
             }
             await session.post(f"https://atcoder.jp/contests/{contest_id}/submit", data=post_data)
             resp = await session.get(f"https://atcoder.jp/contests/{contest_id}/submissions/me")
-            submission_link = self.__get_submission_link(resp)
+            submission_link = self.submission_html_processor.get_submission_link(resp)
             assert submission_link
             sub_id = submission_link.split("/")[-1]
 
@@ -100,22 +92,6 @@ class AtcoderService:
                     score = int(x["Result"][sub_id]["Score"])
                     break
             yield "Accepted" if score > 0 else "Failed"
-
-    def __get_submission_link(self, resp):
-        soup = bs(resp.content, "html.parser")
-
-        # Find the first link within the table
-        tbody_element = soup.find("tbody")
-
-        if tbody_element:
-            tr_element = tbody_element.find("tr")
-            if tr_element:
-                # Find the first link within the tr
-                link_element = tr_element.find("a", string="Detail", href=True)
-                if link_element:
-                    link = link_element["href"]
-                    return link
-        return None
 
     async def __get_submission_status(self, session, submission_id, contest_id):
         url = f"https://atcoder.jp/contests/{contest_id}/submissions/me/status/json?reload=true&sids[]={submission_id}"

@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from problem_randomizer_be.problems.models import Problem
-from problem_randomizer_be.problems.services.atcoder import AtcoderService
+from problem_randomizer_be.problems.services import services
 
 
 class ProblemSerializer(serializers.ModelSerializer[Problem]):
@@ -11,7 +11,6 @@ class ProblemSerializer(serializers.ModelSerializer[Problem]):
 
 
 class ProblemDetailSerializer(serializers.ModelSerializer[Problem]):
-    atcoder_service = AtcoderService()
     content = serializers.SerializerMethodField()
 
     class Meta:
@@ -19,6 +18,6 @@ class ProblemDetailSerializer(serializers.ModelSerializer[Problem]):
         fields = ["id", "source_type", "name", "contest_name", "url", "rating", "content"]
 
     def get_content(self, obj):
-        if obj.source_type == Problem.SourceType.ATCODER:
-            return self.atcoder_service.get_atcoder_content(obj.url)
+        if obj.source_type in [Problem.SourceType.ATCODER, Problem.SourceType.CODEFORCES]:
+            return services[obj.source_type].get_problem_content(obj.url)
         return "NOT IMPLEMENTED"

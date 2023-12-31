@@ -8,26 +8,16 @@ from rest_framework.viewsets import ReadOnlyModelViewSet
 
 from problem_randomizer_be.problems.models import Problem
 from problem_randomizer_be.problems.serializers import ProblemDetailSerializer, ProblemSerializer
-from problem_randomizer_be.problems.services.atcoder import AtcoderService
-from problem_randomizer_be.problems.services.codeforces import CodeforcesService
-from problem_randomizer_be.problems.services.cses import CsesService
+from problem_randomizer_be.problems.services import services
 
 
 class UpdateProblemsViewSet(APIView):
     def __init__(self, **kwargs: Any):
         super().__init__(**kwargs)
-        self.atcoder_service = AtcoderService()
-        self.codeforces_service = CodeforcesService()
-        self.cses_service = CsesService()
-        self.UPDATE_FUNCTION_MAP = {
-            Problem.SourceType.CODEFORCES: self.codeforces_service.update_codeforces_problems,
-            Problem.SourceType.ATCODER: self.atcoder_service.update_atcoder_problems,
-            Problem.SourceType.CSES: self.cses_service.update_cses_problems,
-        }
 
     def get(self, request, source_type):
-        if source_type in self.UPDATE_FUNCTION_MAP:
-            update_func = self.UPDATE_FUNCTION_MAP[source_type]
+        if source_type in services:
+            update_func = services[source_type].update_problems
             try:
                 num_updated = update_func()
                 return Response({"detail": f"update {num_updated} new problems"}, status=status.HTTP_200_OK)
