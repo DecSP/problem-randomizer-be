@@ -4,17 +4,6 @@ from ..utils import ProblemContentHTMLProcessor
 
 
 class AtcoderProblemContentHTMLProcessor(ProblemContentHTMLProcessor):
-    def get_content(self, tag):
-        if tag.name in ["p", "li", "pre"]:
-            return self.tag_to_dict(tag.name, list(map(self.process_child, tag.contents)))
-        contents = []
-        children = tag.contents
-        for child in children:
-            if not child.name:
-                continue
-            contents.append(self.get_content(child))
-        return self.tag_to_dict(tag.name, contents)
-
     def section_to_data(self, section):
         section_name = None
         section_content = []

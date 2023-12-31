@@ -1,12 +1,17 @@
 from urllib.parse import urljoin
 
+import httpx
 import requests
 from bs4 import BeautifulSoup as bs
 
 from problem_randomizer_be.problems.models import Problem
 
+from .html import CsesProblemContentHTMLProcessor
 
-class CsesService:
+
+class CsesClient:
+    content_html_processor = CsesProblemContentHTMLProcessor()
+
     def get_cses_problems(self):
         url = "https://cses.fi/problemset"
         html = requests.get(url).text
@@ -35,8 +40,6 @@ class CsesService:
 
         return problems
 
-    def update_cses_problems(self):
-        problems = self.get_cses_problems()
-        if problems:
-            Problem.objects.bulk_create(problems)
-        return len(problems)
+    def get_problem_content(self, url):
+        html = httpx.get(url).text
+        return self.content_html_processor.html_to_data(html)
