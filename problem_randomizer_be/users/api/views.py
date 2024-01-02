@@ -60,4 +60,4 @@ class SignUpView(generics.CreateAPIView):
             self.perform_create(serializer)
             return CustomResponse(status.HTTP_201_CREATED, "Created user successfully", True)
         except Exception as e:
-            return CustomResponse(status.HTTP_401_UNAUTHORIZED, f"Error: {e}", True)
+            return CustomResponse(status.HTTP_401_UNAUTHORIZED, f"Error: {e}", False)
