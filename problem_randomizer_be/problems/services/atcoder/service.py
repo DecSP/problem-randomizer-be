@@ -20,3 +20,7 @@ class AtcoderService(ProblemSourceService):
 
     def get_problem_content(self, problem):
         return self.client.get_atcoder_content(problem)
+
+    async def submit_problem(self, url, code):
+        async for message in self.client.submit_problem(url, code):
+            yield message

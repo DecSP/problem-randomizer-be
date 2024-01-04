@@ -11,7 +11,7 @@ class CodeforcesService(ProblemSourceService):
 
     def update_problems(self):
         included_urls = set(
-            Problem.objects.filter(source_type=Problem.SourceType.ATCODER).values_list("url", flat=True)
+            Problem.objects.filter(source_type=Problem.SourceType.CODEFORCES).values_list("url", flat=True)
         )
         problems = async_to_sync(self.client.get_codeforces_problems)(included_urls)
         if problems:
