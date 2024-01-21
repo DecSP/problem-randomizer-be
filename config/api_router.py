@@ -2,6 +2,7 @@ from django.conf import settings
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter, SimpleRouter
 
+from problem_randomizer_be.contests.views import ContestViewSet
 from problem_randomizer_be.problems.views import ProblemViewSet
 from problem_randomizer_be.users.api.views import UserViewSet
 
@@ -12,6 +13,7 @@ else:
 
 router.register("users", UserViewSet)
 router.register("problems", ProblemViewSet, basename="problems")
+router.register("contests", ContestViewSet, basename="contests")
 
 app_name = "api"
 urlpatterns = router.urls
