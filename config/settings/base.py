@@ -92,6 +92,7 @@ THIRD_PARTY_APPS = [
 LOCAL_APPS = [
     "problem_randomizer_be.users",
     "problem_randomizer_be.problems",
+    "problem_randomizer_be.contests",
     "problem_randomizer_be.websocket",
     # Your stuff: custom apps go here
 ]
