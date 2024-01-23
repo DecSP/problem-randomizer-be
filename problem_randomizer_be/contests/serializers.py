@@ -18,7 +18,6 @@ class ContestSerializer(serializers.ModelSerializer):
             "owner",
         ]
         read_only_fields = ["owner", "participants", "problems"]
-        write_only_fields = ["title", "description", "duration", "start_time", "is_public", "penalty"]
 
     def create(self, validated_data):
         validated_data["owner"] = self.context["request"].user
