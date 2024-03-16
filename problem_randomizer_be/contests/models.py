@@ -4,7 +4,7 @@ from django_extensions.db.models import TimeStampedModel
 
 class Contest(TimeStampedModel):
     title = models.CharField(max_length=255)
-    description = models.TextField()
+    description = models.TextField(blank=True)
     duration = models.IntegerField()
     start_time = models.DateTimeField()
     is_public = models.BooleanField(default=True)
