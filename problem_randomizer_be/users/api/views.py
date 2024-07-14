@@ -20,10 +20,6 @@ class UserViewSet(RetrieveModelMixin, ListModelMixin, UpdateModelMixin, GenericV
     queryset = User.objects.all()
     lookup_field = "username"
 
-    # def get_queryset(self, *args, **kwargs):
-    #     assert isinstance(self.request.user.id, int)
-    #     return self.queryset.filter(id=self.request.user.id)
-
     @action(detail=False)
     def me(self, request):
         serializer = UserSerializer(request.user, context={"request": request})
@@ -54,10 +50,7 @@ class SignUpView(generics.CreateAPIView):
     serializer_class = UserSerializer
 
     def create(self, request, *args, **kwargs):
-        try:
-            serializer = self.get_serializer(data=request.data)
-            serializer.is_valid(raise_exception=True)
-            self.perform_create(serializer)
-            return CustomResponse(status.HTTP_201_CREATED, "Created user successfully", True)
-        except Exception as e:
-            return CustomResponse(status.HTTP_401_UNAUTHORIZED, f"Error: {e}", False)
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        return CustomResponse(status.HTTP_201_CREATED, "Created user successfully", True)
