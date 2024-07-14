@@ -1,5 +1,5 @@
 from django.contrib.auth import authenticate, get_user_model
-from rest_framework import generics, status
+from rest_framework import generics, serializers, status
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import action
 from rest_framework.mixins import ListModelMixin, RetrieveModelMixin, UpdateModelMixin
@@ -54,3 +54,9 @@ class SignUpView(generics.CreateAPIView):
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         return CustomResponse(status.HTTP_201_CREATED, "Created user successfully", True)
+
+    def handle_exception(self, exc: Exception):
+        response = super().handle_exception(exc)
+        if isinstance(exc, serializers.ValidationError):
+            return CustomResponse(status.HTTP_400_BAD_REQUEST, "Validation failed", response.data)
+        return response
