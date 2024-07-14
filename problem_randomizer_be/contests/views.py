@@ -12,26 +12,17 @@ class ContestViewSet(viewsets.ModelViewSet):
     serializer_class = ContestSerializer
 
     def list(self, request, *args, **kwargs):
-        try:
-            contests = Contest.objects.filter(is_public=True)
-            serializer = ContestSerializer(contests, many=True)
-            return CustomResponse(status.HTTP_200_OK, "Contests retrieved successfully", serializer.data)
-        except Exception as e:
-            return CustomResponse(status.HTTP_500_INTERNAL_SERVER_ERROR, str(e), None)
+        contests = Contest.objects.filter(is_public=True)
+        serializer = ContestSerializer(contests, many=True)
+        return CustomResponse(status.HTTP_200_OK, "Contests retrieved successfully", serializer.data)
 
     def retrieve(self, request, *args, **kwargs):
-        try:
-            contest = self.get_object()
-            serializer = ContestSerializer(contest)
-            return CustomResponse(status.HTTP_200_OK, "Contest retrieved successfully", serializer.data)
-        except Exception as e:
-            return CustomResponse(status.HTTP_500_INTERNAL_SERVER_ERROR, str(e), None)
+        contest = self.get_object()
+        serializer = ContestSerializer(contest)
+        return CustomResponse(status.HTTP_200_OK, "Contest retrieved successfully", serializer.data)
 
     def create(self, request, *args, **kwargs):
         serializer = ContestSerializer(data=request.data, context={"request": request})
-        try:
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-            return CustomResponse(status.HTTP_201_CREATED, "Contest created successfully", serializer.data)
-        except Exception as e:
-            return CustomResponse(status.HTTP_500_INTERNAL_SERVER_ERROR, str(e), None)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return CustomResponse(status.HTTP_201_CREATED, "Contest created successfully", serializer.data)
