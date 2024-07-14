@@ -17,8 +17,11 @@ User = get_user_model()
 class UserViewSet(RetrieveModelMixin, ListModelMixin, UpdateModelMixin, GenericViewSet):
     permission_classes = [IsAuthenticated]
     serializer_class = UserSerializer
-    queryset = User.objects.all()
     lookup_field = "username"
+    queryset = User.objects.all()
+
+    def get_queryset(self):
+        return super().get_queryset().filter(id=self.request.user.id)
 
     @action(detail=False)
     def me(self, request):
