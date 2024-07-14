@@ -18,6 +18,10 @@ class UserViewSet(RetrieveModelMixin, ListModelMixin, UpdateModelMixin, GenericV
     permission_classes = [IsAuthenticated]
     serializer_class = UserSerializer
     lookup_field = "username"
+    queryset = User.objects.all()
+
+    def get_queryset(self):
+        return super().get_queryset().filter(id=self.request.user.id)
 
     def get_queryset(self):
         return super().get_queryset().filter(id=self.request.user.id)
