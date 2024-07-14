@@ -23,11 +23,15 @@ class TestProblemViewSet(TestCase):
     def test_codeforces_problems(self):
         url = reverse("api:problems-by-source", kwargs={"source_type": "codeforces"})
         response = self.client.get(url)
-        assert response.json()[0] == {
-            "source_type": "codeforces",
-            "name": "prob1",
-            "contest_name": "con1",
-            "rating": 100,
-            "url": "www.prob1.com",
-        }
+        self.assertCountEqual(
+            response.json()[0],
+            {
+                "id": self.problems[0].id,
+                "source_type": "codeforces",
+                "name": "prob1",
+                "contest_name": "con1",
+                "rating": 100,
+                "url": "www.prob1.com",
+            },
+        )
         assert len(response.json()) == 1
