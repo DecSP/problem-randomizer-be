@@ -23,13 +23,15 @@ class UserViewSet(RetrieveModelMixin, ListModelMixin, UpdateModelMixin, GenericV
     def get_queryset(self):
         return super().get_queryset().filter(id=self.request.user.id)
 
-    def get_queryset(self):
-        return super().get_queryset().filter(id=self.request.user.id)
-
     @action(detail=False)
     def me(self, request):
         serializer = UserSerializer(request.user, context={"request": request})
         return CustomResponse(status_code=status.HTTP_200_OK, message="", data=serializer.data)
+
+    @action(detail=False, permission_classes=[])
+    def count(self, request):
+        user_count = User.objects.count()
+        return CustomResponse(status.HTTP_200_OK, "User count retrieved successfully", user_count)
 
 
 class LoginView(APIView):
